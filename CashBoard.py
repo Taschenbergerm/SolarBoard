@@ -3,23 +3,25 @@ from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table as dt
+import arrow
+from app import app
 from apps import daily, bulk, history
 
-externel_css = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
-app = dash.Dash(__name__, external_stylesheets= externel_css)
 app.layout = html.Div(
     [
         # header
         html.Div([
-
+            dcc.Interval(id="heartbeat", interval=1*1000, n_intervals=0),
             html.Span("Solactive Complex Board", className='apps-title'),
+            html.Div(id="date", style={"margin-top": "2%"}),
 
-            html.Div(
+        html.Div(
                 html.Img(
-                    src='https://www.google.com/imgres?imgurl=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F6%2F6f%2F%25C2%25A9_Solactive_AG_Logo_Color.svg%2F1200px-%25C2%25A9_Solactive_AG_Logo_Color.svg.png&imgrefurl=https%3A%2F%2Fde.wikipedia.org%2Fwiki%2FSolactive&docid=QDS7D4FDZvwdhM&tbnid=fxxt9BBGOlc5-M%3A&vet=10ahUKEwj8jLPW1P_fAhXSsaQKHdz3ByMQMwg_KAEwAQ..i&w=1200&h=505&bih=558&biw=1097&q=Solactive&ved=0ahUKEwj8jLPW1P_fAhXSsaQKHdz3ByMQMwg_KAEwAQ&iact=mrc&uact=8',
-                    height="100%")
-                , style={"float": "right", "height": "100%"})
+                    src="https://www.solactive.com/wp-content/themes/solactive-2018/resources/assets/images/logo_solactive.svg",
+                    height="100%",
+                    style={"margin-top": "-20%"}
+                    )
+                , style={"float": "right", "height": "75%", "margin-top": "-3.5%"})
         ],
             className="row header",
             style={"background-color":"#10409c"}
@@ -78,5 +80,14 @@ def render_content(tab):
     else:
         return daily.layout
 
+
+@app.callback(Output("date", "children"),
+              [Input("heartbeat", "n_intervals")])
+def update_date(n_interval):
+    date = arrow.get().to("CET")
+    time = arrow.get().to("CET").time()
+    return f"{date.format('ddd Do of MMM')} {time.hour}:{time.minute}:{time.second:02}"
+
 if __name__ == '__main__':
     app.run_server(debug=True)
+
